@@ -2,7 +2,7 @@ import streamlit as st
 from upload import upload_files
 from Analysis import parse_budget, parse_expense, summarize_monthly, category_summary
 
-st.title("📊 Budget vs Expense Reporting Tool")
+st.title("📊 Budget Reporter")
 
 budget_file, expense_file = upload_files()
 
