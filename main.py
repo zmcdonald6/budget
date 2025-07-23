@@ -1,45 +1,50 @@
-#Author: Zedaine McDonald
-
 import streamlit as st
-import Analysis
+import pandas as pd
 from upload import upload_files
-from Analysis import parse_budget, parse_expense, monthly_summary, category_summary, subcategory_summary, vendor_summary
+from Analysis import (
+    parse_budget,
+    parse_expense,
+    category_summary,
+    subcategory_summary,
+    monthly_summary,
+    vendor_summary
+)
 
-print(dir(Analysis))
-st.set_page_config(page_title="Budget App", layout="wide")
+def clean_columns(df):
+    return df.rename(columns=lambda x: x.replace("_", " "))
 
-st.title("💼 Budget Analysis Dashboard")
+st.set_page_config(page_title="Department Budget Reporter", layout="wide")
 
+st.title("📊 Department Budget Reporter")
+st.markdown("Upload your budget and expense Excel files below to generate reports.")
+
+# File upload section
 budget_file, expense_file = upload_files()
 
 if budget_file and expense_file:
     budget_df = parse_budget(budget_file)
     expense_df = parse_expense(expense_file)
 
-    cat_summary = category_summary(expense_df, budget_df)
-    subcat_summary = subcategory_summary(expense_df, budget_df)
-    month_summary = monthly_summary(expense_df)
-    vendor_sum = vendor_summary(expense_df)
+    st.success("Files successfully uploaded and parsed.")
 
-    with st.expander("📊 Category Summary"):
-        st.write("Total spent vs. budget by category")
-        st.dataframe(cat_summary)
+    with st.expander("📊 Category Summary", expanded=False):
+        cat_summary = category_summary(expense_df, budget_df)
+        st.dataframe(clean_columns(cat_summary))
 
-    with st.expander("🧩 Category Breakdown"):
-        categories = sorted(cat_summary['Category'].unique())
-        selected = st.selectbox("Select a category", categories)
-        filtered = subcat_summary[subcat_summary['Category'] == selected]
-        st.dataframe(filtered)
+    with st.expander("🧩 Category Breakdown", expanded=False):
+        subcat_summary = subcategory_summary(expense_df, budget_df)
+        selected = st.selectbox("Select a category to expand", subcat_summary["Category"].unique())
+        filtered = subcat_summary[subcat_summary["Category"] == selected].copy()
+        if "Subcategory" in filtered.columns:
+            filtered.drop(columns="Subcategory", inplace=True)
+        st.dataframe(clean_columns(filtered))
 
-    with st.expander("📆 Monthly Summary"):
-        st.write("Spending by month")
-        st.dataframe(month_summary)
-        st.bar_chart(month_summary.set_index("Month"))
+    with st.expander("📆 Monthly Summary", expanded=False):
+        st.dataframe(clean_columns(monthly_summary(expense_df)))
 
-    with st.expander("🏷️ Vendor Summary"):
-        vendors = sorted(expense_df['Vendor'].dropna().unique())
-        vendor_filter = st.selectbox("Filter by vendor", vendors)
-        vendor_table = vendor_sum[vendor_sum['Vendor'] == vendor_filter]
-        st.dataframe(vendor_table)
-else:
-    st.info("Please upload both a budget file and an expense file.")
+    with st.expander("🏷️ Vendor Summary", expanded=False):
+        vendors = vendor_summary(expense_df)
+        search = st.text_input("Search for a vendor")
+        if search:
+            vendors = vendors[vendors["Vendor"].str.contains(search, case=False)]
+        st.dataframe(clean_columns(vendors))
