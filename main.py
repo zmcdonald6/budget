@@ -75,6 +75,9 @@ if budget_file and expense_file:
             merged_sub["Label"] = merged_sub["Subcategory"]
             merged_sub["Actual_Spend"] = merged_sub["Actual_Spend"].astype(float)
             merged_sub["Budget_Amount"] = merged_sub["Budget_Amount"].astype(float)
+            merged_sub["Variance"] = merged_sub["Budget_Amount"] - merged_sub["Actual_Spend"]
+
+            st.dataframe(clean_columns(merged_sub[["Subcategory", "Actual_Spend", "Budget_Amount", "Variance"]]))
 
             fig_subcat, ax_subcat = plt.subplots()
             merged_sub.set_index("Label")[["Actual_Spend", "Budget_Amount"]].plot(kind="bar", ax=ax_subcat)
@@ -107,3 +110,4 @@ if budget_file and expense_file:
         sns.heatmap(pivot, cmap="coolwarm", annot=True, fmt=".0f", ax=ax_heat)
         ax_heat.set_title("Budget Variance Heatmap")
         st.pyplot(fig_heat)
+
