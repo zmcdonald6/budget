@@ -4,6 +4,7 @@ import streamlit as st
 from upload import upload_files
 from Analysis import parse_budget, parse_expense, monthly_summary, category_summary, subcategory_summary, vendor_summary
 
+print(dir(Analysis))
 st.set_page_config(page_title="Budget App", layout="wide")
 
 st.title("💼 Budget Analysis Dashboard")
