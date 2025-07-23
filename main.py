@@ -27,27 +27,31 @@ if budget_file and expense_file:
     budget_df = parse_budget(budget_file)
     expense_df = parse_expense(expense_file)
 
+    # MONTHLY SUMMARY
     with st.expander("📅 Monthly Summary"):
         monthly_df = monthly_summary(expense_df)
-        st.dataframe(clean_columns(monthly_df))
+        monthly_df.rename(columns=lambda x: x.replace("_", " "), inplace=True)
+        st.dataframe(monthly_df)
 
+        st.markdown("#### Spending by Month")
         fig_month, ax_month = plt.subplots()
-        sns.barplot(data=monthly_df, x="Month", y="Total_Spent", ax=ax_month)
+        sns.barplot(data=monthly_df, x="Month", y="Total Spent", ax=ax_month)
         ax_month.set_title("Monthly Spending")
         st.pyplot(fig_month)
 
+    # CATEGORY BREAKDOWN
     with st.expander("📁 Category Breakdown"):
         category_df = category_summary(expense_df, budget_df)
-        st.dataframe(clean_columns(category_df))
+        category_df.rename(columns=lambda x: x.replace("_", " "), inplace=True)
+        st.dataframe(category_df)
 
         fig_cat, ax_cat = plt.subplots()
-        category_df.rename(columns=lambda x: x.replace("_", " "), inplace=True)
-        category_df[["Category", "Actual Spend"]] = category_df[["Category", "Total Spent"]]
-        category_df[["Budget Amount"]] = category_df[["Budgeted Amount"]]
-        category_df.set_index("Category")[["Actual Spend", "Budget Amount"]].plot(kind="bar", ax=ax_cat)
+        category_df.set_index("Category")[["Total Spent", "Budgeted Amount"]].plot(kind="bar", ax=ax_cat)
         ax_cat.set_title("Actual vs Budget by Category")
+        ax_cat.set_ylabel("Amount")
         st.pyplot(fig_cat)
 
+    # SUBCATEGORY BREAKDOWN
     with st.expander("📂 Subcategory Breakdown"):
         if category_df is not None and expense_df is not None:
             selected = st.selectbox("Select a Category", category_df["Category"].unique())
@@ -78,6 +82,7 @@ if budget_file and expense_file:
             ax_subcat.set_ylabel("Amount")
             st.pyplot(fig_subcat)
 
+    # VENDOR SUMMARY
     with st.expander("💼 Vendor Summary"):
         vendors = vendor_summary(expense_df)
         search = st.text_input("Search for a vendor")
@@ -93,8 +98,10 @@ if budget_file and expense_file:
         ax_vendor.set_title("Top Vendors by Spend")
         st.pyplot(fig_vendor)
 
+    # VARIANCE HEATMAP
     with st.expander("📊 Variance Heatmap"):
         variance_df = category_summary(expense_df, budget_df)
+        variance_df.rename(columns=lambda x: x.replace("_", " "), inplace=True)
         pivot = variance_df.pivot_table(index="Category", values="Variance")
         fig_heat, ax_heat = plt.subplots()
         sns.heatmap(pivot, cmap="coolwarm", annot=True, fmt=".0f", ax=ax_heat)
