@@ -68,7 +68,9 @@ if budget_file and expense_file:
         search = st.text_input("Search for a vendor")
         if search:
             vendors = vendors[vendors["Vendor"].str.contains(search, case=False)]
-        st.dataframe(clean_columns(vendors))
+        vendors.rename(columns=lambda x: x.replace("_", " "), inplace = True)
+        
+        st.dataframe(vendors)
 
         st.markdown("#### Top Vendors by Spend")
         fig_vendor, ax_vendor = plt.subplots()
