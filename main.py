@@ -1,8 +1,12 @@
+#Author: Zedaine McDonald
+
 import streamlit as st
 from upload import upload_files
-from Analysis import parse_budget, parse_expense, summarize_monthly, category_summary
+from Analysis import parse_budget, parse_expense, monthly_summary, category_summary, subcategory_summary, vendor_summary
 
-st.title("📊 Budget Reporter")
+st.set_page_config(page_title="Budget App", layout="wide")
+
+st.title("💼 Budget Analysis Dashboard")
 
 budget_file, expense_file = upload_files()
 
@@ -10,19 +14,30 @@ if budget_file and expense_file:
     budget_df = parse_budget(budget_file)
     expense_df = parse_expense(expense_file)
 
-    st.subheader("📅 Monthly Overview")
-    monthly_summary = summarize_monthly(budget_df, expense_df)
-    st.dataframe(monthly_summary)
-    st.bar_chart(monthly_summary.set_index("Month")[["Budgeted", "Spent"]])
+    cat_summary = category_summary(expense_df, budget_df)
+    subcat_summary = subcategory_summary(expense_df, budget_df)
+    month_summary = monthly_summary(expense_df)
+    vendor_sum = vendor_summary(expense_df)
 
-    st.subheader("📂 Category Breakdown")
-    category_df = category_summary(expense_df)
-    st.dataframe(category_df)
+    with st.expander("📊 Category Summary"):
+        st.write("Total spent vs. budget by category")
+        st.dataframe(cat_summary)
 
-    st.subheader("🧾 Raw Expense Data")
-    st.dataframe(expense_df)
+    with st.expander("🧩 Category Breakdown"):
+        categories = sorted(cat_summary['Category'].unique())
+        selected = st.selectbox("Select a category", categories)
+        filtered = subcat_summary[subcat_summary['Category'] == selected]
+        st.dataframe(filtered)
 
-    st.subheader("🗃️ Raw Budget Data")
-    st.dataframe(budget_df)
+    with st.expander("📆 Monthly Summary"):
+        st.write("Spending by month")
+        st.dataframe(month_summary)
+        st.bar_chart(month_summary.set_index("Month"))
+
+    with st.expander("🏷️ Vendor Summary"):
+        vendors = sorted(expense_df['Vendor'].dropna().unique())
+        vendor_filter = st.selectbox("Filter by vendor", vendors)
+        vendor_table = vendor_sum[vendor_sum['Vendor'] == vendor_filter]
+        st.dataframe(vendor_table)
 else:
-    st.info("Please upload both a budget and an expense file to proceed.")
+    st.info("Please upload both a budget file and an expense file.")
