@@ -78,7 +78,7 @@ def subcategory_summary(expense_df, budget_df):
 
     merged = pd.merge(sub_total, budget_sub, left_on=["Category", "Sub-Category"],
                       right_on=["Category", "Subcategory"], how="left")
-    merged["Variance"] = merged["Budgeted Amount"] - merged["Total Spent"]
+    merged["Variance"] = merged["Budgeted_Amount"] - merged["Total_Spent"]
     return merged
 
 
