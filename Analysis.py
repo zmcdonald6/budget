@@ -4,16 +4,18 @@ from openpyxl import load_workbook
 from io import BytesIO
 import pandas as pd
 
-# Parse Budget File
 def parse_budget(file):
-    wb = load_workbook(filename=BytesIO(file.read()), data_only=True)   #Load excel file
+    from openpyxl import load_workbook
+    from io import BytesIO
+
+    wb = load_workbook(filename=BytesIO(file.read()), data_only=True)
     sheet = wb.active
-    month_headers = [cell.value for cell in sheet[1][1:14]]  # B1 to N1, Month headers.
+    month_headers = [cell.value for cell in sheet[1][1:14]]  # B1 to N1
 
-    data = []   #Parsed Data stored here
-    current_category = None #Stores main categories(indicated by yellow fill)
+    data = []
+    current_category = None
 
-    for row in sheet.iter_rows(min_row=2):  
+    for row in sheet.iter_rows(min_row=2):
         name_cell = row[0]
         name = name_cell.value
         if name is None:
@@ -42,39 +44,52 @@ def parse_budget(file):
 
     return pd.DataFrame(data)
 
-# Parse Expense File
+
 def parse_expense(file):
-    wb = load_workbook(filename=BytesIO(file.read()), data_only=True)
-    sheet = wb.active
-
-    headers = [cell.value for cell in sheet[1]]
-    data = []
-
-    for row in sheet.iter_rows(min_row=2, values_only=True):
-        if any(row):
-            data.append(dict(zip(headers, row)))
-
-    df = pd.DataFrame(data)
-    df["Month"] = pd.to_datetime(df["Date"]).dt.month
+    df = pd.read_excel(file)
+    df["Date"] = pd.to_datetime(df["Date"])
+    df["Month"] = df["Date"].dt.strftime("%B")
     return df
 
-# Summarize Monthly
-def summarize_monthly(budget_df, expense_df):
-    summary = []
-    for month in range(1, 13):
-        col = f"Month {month}"
-        budget_total = budget_df.get(col, pd.Series()).sum()
-        spent_total = expense_df[expense_df["Month"] == month]["Amount"].sum()
-        summary.append({
-            "Month": col,
-            "Budgeted": budget_total,
-            "Spent": spent_total,
-            "Variance": budget_total - spent_total
-        })
-    return pd.DataFrame(summary)
 
-# Summarize by Category, Subcategory, Vendor
-def category_summary(expense_df):
-    return expense_df.groupby(["Category", "Sub-Category", "Vendor"]).agg(
+def category_summary(expense_df, budget_df):
+    cat_total = expense_df.groupby("Category").agg(
+        Total_Spent=("Amount", "sum"),
+        Purchase_Count=("Amount", "count")
+    ).reset_index()
+
+    budget_total = budget_df.groupby("Category").agg(
+        Budgeted_Amount=("Total", "sum")
+    ).reset_index()
+
+    merged = pd.merge(cat_total, budget_total, on="Category", how="left")
+    merged["Variance"] = merged["Budgeted_Amount"] - merged["Total_Spent"]
+    return merged
+
+
+def subcategory_summary(expense_df, budget_df):
+    sub_total = expense_df.groupby(["Category", "Sub-Category"]).agg(
         Total_Spent=("Amount", "sum")
+    ).reset_index()
+
+    budget_sub = budget_df.groupby(["Category", "Subcategory"]).agg(
+        Budgeted_Amount=("Total", "sum")
+    ).reset_index()
+
+    merged = pd.merge(sub_total, budget_sub, left_on=["Category", "Sub-Category"],
+                      right_on=["Category", "Subcategory"], how="left")
+    merged["Variance"] = merged["Budgeted_Amount"] - merged["Total_Spent"]
+    return merged
+
+
+def monthly_summary(expense_df):
+    return expense_df.groupby("Month").agg(
+        Total_Spent=("Amount", "sum")
+    ).reset_index()
+
+
+def vendor_summary(expense_df):
+    return expense_df.groupby("Vendor").agg(
+        Total_Spent=("Amount", "sum"),
+        Purchase_Count=("Amount", "count")
     ).reset_index()
