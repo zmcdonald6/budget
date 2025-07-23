@@ -1,6 +1,7 @@
 #Author: Zedaine McDonald
 
 import streamlit as st
+import Analysis
 from upload import upload_files
 from Analysis import parse_budget, parse_expense, monthly_summary, category_summary, subcategory_summary, vendor_summary
 
