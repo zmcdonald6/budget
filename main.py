@@ -13,7 +13,7 @@ from Analysis import (
 def clean_columns(df):
     return df.rename(columns=lambda x: x.replace("_", " "))
 
-st.set_page_config(page_title="Department Budget Reporter", layout="wide")
+st.set_page_config(page_title="Group IT Budget Reporter", layout="wide")
 
 st.title("📊 Department Budget Reporter")
 st.markdown("Upload your budget and expense Excel files below to generate reports.")
