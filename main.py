@@ -13,7 +13,7 @@ from Analysis import (
 from upload import upload_files
 import matplotlib.pyplot as plt
 import seaborn as sns
-import streamlit_authenticator
+import streamlit_authenticator as stauth
 
 # Define users and credentials
 names = ["Zedaine McDonald", "Finance Manager"]
