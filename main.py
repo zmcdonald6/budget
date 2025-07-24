@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 st.set_page_config(layout="wide")
-st.title("📊 Department Budget Tracker")
+st.title("📊 MSGIT Budget Reporter")
 
 
 def clean_columns(df):
