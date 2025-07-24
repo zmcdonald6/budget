@@ -17,26 +17,24 @@ import streamlit_authenticator as stauth
 
 import streamlit_authenticator as stauth
 
-# Sample users
 names = ["Zedaine McDonald", "Finance Manager"]
 usernames = ["zedaine", "manager"]
-passwords = ["budget123", "manager456"]
 
-# Hash passwords properly
-hasher = stauth.Hasher()
-hashed_pw = hasher.generate(passwords)
+# Paste your hashed passwords here
+hashed_passwords = [
+    'pbkdf2:sha256:260000$EXAMPLE1$abc...',
+    'pbkdf2:sha256:260000$EXAMPLE2$xyz...'
+]
 
-# Setup authentication
 authenticator = stauth.Authenticate(
     names,
     usernames,
-    hashed_pw,
+    hashed_passwords,
     "budget_app",
     "auth_cookie_secret",
     cookie_expiry_days=1
 )
 
-# Login UI
 name, auth_status, username = authenticator.login("Login", "sidebar")
 
 if auth_status is False:
@@ -45,7 +43,6 @@ elif auth_status is None:
     st.warning("Please enter your credentials.")
 elif auth_status:
     st.success(f"✅ Welcome, {name}!")
-
 
 
 if auth_status:
