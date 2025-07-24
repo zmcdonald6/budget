@@ -17,9 +17,11 @@ import seaborn as sns
 st.set_page_config(layout="wide")
 st.title("📊 Department Budget Tracker")
 
+
 def clean_columns(df):
     df.columns = df.columns.str.replace("_", " ")
     return df
+
 
 budget_file, expense_file = upload_files()
 
@@ -53,18 +55,19 @@ if budget_file and expense_file:
 
     # SUBCATEGORY BREAKDOWN
     with st.expander("📂 Subcategory Breakdown"):
-        if category_df is not None and expense_df is not None:
+        if expense_df is not None and budget_df is not None:
+            category_df = category_summary(expense_df, budget_df)
             categories = st.multiselect("Select Categories", category_df["Category"].unique(), default=category_df["Category"].unique())
-    
+
             sub_exp = expense_df[expense_df["Category"].isin(categories)]
             sub_bud = budget_df[budget_df["Category"].isin(categories)]
-    
+
             subcat_exp = sub_exp.groupby(["Category", "Sub-Category"])["Amount"].sum().reset_index()
             subcat_exp.rename(columns={"Amount": "Actual_Spend"}, inplace=True)
-    
+
             subcat_bud = sub_bud.groupby(["Category", "Subcategory"])["Total"].sum().reset_index()
             subcat_bud.rename(columns={"Total": "Budget_Amount"}, inplace=True)
-    
+
             merged_sub = pd.merge(
                 subcat_bud,
                 subcat_exp,
@@ -72,22 +75,21 @@ if budget_file and expense_file:
                 right_on=["Category", "Sub-Category"],
                 how="left"
             ).fillna(0)
-    
+
             merged_sub["Actual_Spend"] = merged_sub["Actual_Spend"].astype(float)
             merged_sub["Budget_Amount"] = merged_sub["Budget_Amount"].astype(float)
             merged_sub["Variance"] = merged_sub["Budget_Amount"] - merged_sub["Actual_Spend"]
-            merged_sub["Label"] = merged_sub["Subcategory"]
-    
+
             reordered = merged_sub[["Category", "Subcategory", "Budget_Amount", "Actual_Spend", "Variance"]]
             st.dataframe(clean_columns(reordered))
-    
+
             st.markdown("#### Subcategory Budget Comparison Chart")
             fig_subcat, ax_subcat = plt.subplots(figsize=(10, 6))
-            reordered.set_index("Subcategory")[["Budget_Amount", "Actual_Spend"]].plot(kind="bar", ax=ax_subcat)
+            cleaned = clean_columns(reordered.copy())
+            cleaned.set_index("Subcategory")[["Budget Amount", "Actual Spend"]].plot(kind="bar", ax=ax_subcat)
             ax_subcat.set_title("Subcategory Budget vs Actual")
             ax_subcat.set_ylabel("Amount")
             st.pyplot(fig_subcat)
-
 
     # VENDOR SUMMARY
     with st.expander("💼 Vendor Summary"):
