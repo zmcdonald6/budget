@@ -21,7 +21,7 @@ usernames = ["zedaine", "manager"]
 passwords = ["budget123", "manager456"]
 
 # Hashed passwords (safe for production use)
-hashed_pw = stauth.Hasher(passwords).generate()
+hashed_pw = stauth.Hasher().generate(passwords)
 
 # Create authenticator instance
 authenticator = stauth.Authenticate(
