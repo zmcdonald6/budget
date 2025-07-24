@@ -62,25 +62,31 @@ if budget_file and expense_file:
             if "selected_categories" not in st.session_state:
                 st.session_state.selected_categories = set(all_categories)
     
-            def toggle_all_categories():
-                if st.session_state.select_all:
-                    st.session_state.selected_categories = set(all_categories)
-                else:
-                    st.session_state.selected_categories = set()
+            with st.expander("🗂️ Select Categories to Display"):
+                # Select All Toggle
+                def toggle_all_categories():
+                    if st.session_state.select_all:
+                        st.session_state.selected_categories = set(all_categories)
+                    else:
+                        st.session_state.selected_categories = set()
     
-            st.markdown("#### Category Selector")
+                st.checkbox("Select All", key="select_all", on_change=toggle_all_categories)
     
-            st.checkbox("Select All Categories", key="select_all", on_change=toggle_all_categories)
+                # Category checkboxes
+                updated_selection = set()
+                for cat in all_categories:
+                    key = f"cat_{cat}"
+                    checked = st.checkbox(cat, key=key, value=cat in st.session_state.selected_categories)
+                    if checked:
+                        updated_selection.add(cat)
     
-            selected = set()
-            for cat in all_categories:
-                if st.checkbox(cat, key=f"cat_{cat}", value=cat in st.session_state.selected_categories):
-                    selected.add(cat)
-            st.session_state.selected_categories = selected
+                st.session_state.selected_categories = updated_selection
     
+            # Filter dataframes
             filtered_exp = expense_df[expense_df["Category"].isin(st.session_state.selected_categories)]
             filtered_bud = budget_df[budget_df["Category"].isin(st.session_state.selected_categories)]
     
+            # Group and merge
             subcat_exp = filtered_exp.groupby(["Category", "Sub-Category"])["Amount"].sum().reset_index()
             subcat_exp.rename(columns={"Amount": "Actual_Spend"}, inplace=True)
     
@@ -100,6 +106,7 @@ if budget_file and expense_file:
             merged_sub["Variance"] = merged_sub["Budget_Amount"] - merged_sub["Actual_Spend"]
     
             reordered = merged_sub[["Category", "Subcategory", "Budget_Amount", "Actual_Spend", "Variance"]]
+    
             st.dataframe(clean_columns(reordered))
     
             st.markdown("#### Subcategory Budget Comparison Chart")
@@ -112,6 +119,7 @@ if budget_file and expense_file:
                 st.pyplot(fig_subcat)
             else:
                 st.info("No data to display. Please select one or more categories.")
+
 
     
     # VENDOR SUMMARY
