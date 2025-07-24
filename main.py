@@ -15,18 +15,25 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import streamlit_authenticator as stauth
 
-# Define users and credentials
+import streamlit_authenticator as stauth
+
+# Sample users
 names = ["Zedaine McDonald", "Finance Manager"]
 usernames = ["zedaine", "manager"]
 passwords = ["budget123", "manager456"]
 
-# Hashed passwords (safe for production use)
-hashed_pw = stauth.Hasher().generate(passwords)
+# Hash passwords properly
+hasher = stauth.Hasher()
+hashed_pw = hasher.generate(passwords)
 
-# Create authenticator instance
+# Setup authentication
 authenticator = stauth.Authenticate(
-    names, usernames, hashed_pw,
-    "budget_app", "auth_cookie_secret", cookie_expiry_days=1
+    names,
+    usernames,
+    hashed_pw,
+    "budget_app",
+    "auth_cookie_secret",
+    cookie_expiry_days=1
 )
 
 # Login UI
@@ -37,8 +44,10 @@ if auth_status is False:
 elif auth_status is None:
     st.warning("Please enter your credentials.")
 elif auth_status:
-    # Success — let the app continue
     st.success(f"✅ Welcome, {name}!")
+
+
+
 if auth_status:
     st.set_page_config(layout="wide")
     st.title("📊 MSGIT Budget Reporter")
