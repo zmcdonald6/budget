@@ -57,46 +57,34 @@ if budget_file and expense_file:
     # SUBCATEGORY BREAKDOWN
     with st.expander("📂 Subcategory Breakdown"):
         if expense_df is not None and budget_df is not None:
-            category_df = category_summary(expense_df, budget_df)
-            subcategory_map = budget_df.groupby("Category")["Subcategory"].unique().to_dict()
+            all_categories = sorted(budget_df["Category"].dropna().unique())
     
-            selected_subcategories = {}
+            if "selected_categories" not in st.session_state:
+                st.session_state.selected_categories = set(all_categories)
     
-            for category, subcategories in subcategory_map.items():
-                with st.expander(f"{category}"):
-                    select_all_key = f"select_all_{category}"
-                    if select_all_key not in st.session_state:
-                        st.session_state[select_all_key] = False
+            def toggle_all_categories():
+                if st.session_state.select_all:
+                    st.session_state.selected_categories = set(all_categories)
+                else:
+                    st.session_state.selected_categories = set()
     
-                    def toggle_all(cat=category, subs=subcategories):
-                        for sub in subs:
-                            st.session_state[f"{cat}_{sub}"] = st.session_state[select_all_key]
+            st.markdown("#### Category Selector")
     
-                    st.checkbox("Select All", key=select_all_key, on_change=toggle_all)
+            st.checkbox("Select All Categories", key="select_all", on_change=toggle_all_categories)
     
-                    selected_subcategories[category] = []
-                    for sub in subcategories:
-                        checkbox_key = f"{category}_{sub}"
-                        if checkbox_key not in st.session_state:
-                            st.session_state[checkbox_key] = False
-                        checked = st.checkbox(sub, key=checkbox_key)
-                        if checked:
-                            selected_subcategories[category].append(sub)
+            selected = set()
+            for cat in all_categories:
+                if st.checkbox(cat, key=f"cat_{cat}", value=cat in st.session_state.selected_categories):
+                    selected.add(cat)
+            st.session_state.selected_categories = selected
     
-            # Build filter for selected subcategories
-            filter_rows = []
-            for cat, subs in selected_subcategories.items():
-                for sub in subs:
-                    filter_rows.append((cat, sub))
+            filtered_exp = expense_df[expense_df["Category"].isin(st.session_state.selected_categories)]
+            filtered_bud = budget_df[budget_df["Category"].isin(st.session_state.selected_categories)]
     
-            # Prepare subcategory dataframes
-            sub_exp = expense_df.copy()
-            sub_bud = budget_df.copy()
-    
-            subcat_exp = sub_exp.groupby(["Category", "Sub-Category"])["Amount"].sum().reset_index()
+            subcat_exp = filtered_exp.groupby(["Category", "Sub-Category"])["Amount"].sum().reset_index()
             subcat_exp.rename(columns={"Amount": "Actual_Spend"}, inplace=True)
     
-            subcat_bud = sub_bud.groupby(["Category", "Subcategory"])["Total"].sum().reset_index()
+            subcat_bud = filtered_bud.groupby(["Category", "Subcategory"])["Total"].sum().reset_index()
             subcat_bud.rename(columns={"Total": "Budget_Amount"}, inplace=True)
     
             merged_sub = pd.merge(
@@ -112,11 +100,6 @@ if budget_file and expense_file:
             merged_sub["Variance"] = merged_sub["Budget_Amount"] - merged_sub["Actual_Spend"]
     
             reordered = merged_sub[["Category", "Subcategory", "Budget_Amount", "Actual_Spend", "Variance"]]
-    
-            if filter_rows:
-                filter_df = pd.DataFrame(filter_rows, columns=["Category", "Subcategory"])
-                reordered = pd.merge(reordered, filter_df, on=["Category", "Subcategory"])
-    
             st.dataframe(clean_columns(reordered))
     
             st.markdown("#### Subcategory Budget Comparison Chart")
@@ -128,7 +111,8 @@ if budget_file and expense_file:
                 ax_subcat.set_ylabel("Amount")
                 st.pyplot(fig_subcat)
             else:
-                st.info("No subcategories selected.")
+                st.info("No data to display. Please select one or more categories.")
+
     
     # VENDOR SUMMARY
     with st.expander("💼 Vendor Summary"):
