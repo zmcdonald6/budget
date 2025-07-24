@@ -53,37 +53,41 @@ if budget_file and expense_file:
 
     # SUBCATEGORY BREAKDOWN
     with st.expander("📂 Subcategory Breakdown"):
-        if category_df is not None and expense_df is not None:
-            selected = st.selectbox("Select a Category", category_df["Category"].unique())
-            sub_exp = expense_df[expense_df["Category"] == selected]
-            sub_bud = budget_df[budget_df["Category"] == selected]
+    if category_df is not None and expense_df is not None:
+        categories = st.multiselect("Select Categories", category_df["Category"].unique(), default=category_df["Category"].unique())
 
-            subcat_exp = sub_exp.groupby("Sub-Category")["Amount"].sum().reset_index()
-            subcat_exp.rename(columns={"Amount": "Actual_Spend"}, inplace=True)
+        sub_exp = expense_df[expense_df["Category"].isin(categories)]
+        sub_bud = budget_df[budget_df["Category"].isin(categories)]
 
-            subcat_bud = sub_bud.groupby("Subcategory")["Total"].sum().reset_index()
-            subcat_bud.rename(columns={"Total": "Budget_Amount"}, inplace=True)
+        subcat_exp = sub_exp.groupby(["Category", "Sub-Category"])["Amount"].sum().reset_index()
+        subcat_exp.rename(columns={"Amount": "Actual_Spend"}, inplace=True)
 
-            merged_sub = pd.merge(
-                subcat_bud,
-                subcat_exp,
-                left_on="Subcategory",
-                right_on="Sub-Category",
-                how="left"
-            ).fillna(0)
+        subcat_bud = sub_bud.groupby(["Category", "Subcategory"])["Total"].sum().reset_index()
+        subcat_bud.rename(columns={"Total": "Budget_Amount"}, inplace=True)
 
-            merged_sub["Label"] = merged_sub["Subcategory"]
-            merged_sub["Actual_Spend"] = merged_sub["Actual_Spend"].astype(float)
-            merged_sub["Budget_Amount"] = merged_sub["Budget_Amount"].astype(float)
-            merged_sub["Variance"] = merged_sub["Budget_Amount"] - merged_sub["Actual_Spend"]
+        merged_sub = pd.merge(
+            subcat_bud,
+            subcat_exp,
+            left_on=["Category", "Subcategory"],
+            right_on=["Category", "Sub-Category"],
+            how="left"
+        ).fillna(0)
 
-            st.dataframe(clean_columns(merged_sub[["Subcategory", "Actual_Spend", "Budget_Amount", "Variance"]]))
+        merged_sub["Actual_Spend"] = merged_sub["Actual_Spend"].astype(float)
+        merged_sub["Budget_Amount"] = merged_sub["Budget_Amount"].astype(float)
+        merged_sub["Variance"] = merged_sub["Budget_Amount"] - merged_sub["Actual_Spend"]
+        merged_sub["Label"] = merged_sub["Subcategory"]
 
-            fig_subcat, ax_subcat = plt.subplots()
-            merged_sub.set_index("Label")[["Actual_Spend", "Budget_Amount"]].plot(kind="bar", ax=ax_subcat)
-            ax_subcat.set_title(f"{selected} - Actual vs Budget")
-            ax_subcat.set_ylabel("Amount")
-            st.pyplot(fig_subcat)
+        reordered = merged_sub[["Category", "Subcategory", "Budget_Amount", "Actual_Spend", "Variance"]]
+        st.dataframe(clean_columns(reordered))
+
+        st.markdown("#### Subcategory Budget Comparison Chart")
+        fig_subcat, ax_subcat = plt.subplots(figsize=(10, 6))
+        reordered.set_index("Subcategory")[["Budget_Amount", "Actual_Spend"]].plot(kind="bar", ax=ax_subcat)
+        ax_subcat.set_title("Subcategory Budget vs Actual")
+        ax_subcat.set_ylabel("Amount")
+        st.pyplot(fig_subcat)
+
 
     # VENDOR SUMMARY
     with st.expander("💼 Vendor Summary"):
