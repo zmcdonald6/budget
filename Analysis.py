@@ -1,13 +1,10 @@
-#Author: Zedaine McDonald
+# Author: Zedaine McDonald
 
 from openpyxl import load_workbook
 from io import BytesIO
 import pandas as pd
 
 def parse_budget(file):
-    from openpyxl import load_workbook
-    from io import BytesIO
-
     wb = load_workbook(filename=BytesIO(file.read()), data_only=True)
     sheet = wb.active
     month_headers = [cell.value for cell in sheet[1][1:14]]  # B1 to N1
