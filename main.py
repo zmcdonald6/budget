@@ -15,8 +15,7 @@ import streamlit_authenticator as stauth
 
 load_dotenv()
 
-hashed_pw = stauth.Hasher(["bup"]).generate()
-print(hashed_pw)
+
 
 # Use pre-hashed passwords
 credentials = {
@@ -27,7 +26,7 @@ credentials = {
         },
         "zedaine": {
             "name": "Zedaine McDonald",
-            "password": "bup"
+            "password": "$2b$12$J9aDqzgjEiPi7Ym0Me1oqOCmxvh/sYZVjES.yAnLPjflxmuWkqXcu"
         }
     }
 }
