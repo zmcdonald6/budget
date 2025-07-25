@@ -3,6 +3,6 @@ pandas
 openpyxl
 matplotlib
 seaborn
-streamlit_authenticator
+streamlit_authenticator>-0.2.2
 boto3
 python-dotenv
