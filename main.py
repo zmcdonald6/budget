@@ -28,7 +28,8 @@ authenticator = Authenticate(
 )
 
 name, auth_status, username = authenticator.login('main')
-
+login_result = authenticator.login(location="main")
+st.write(login_result)
 if auth_status is False:
     st.error("Incorrect username or password.")
 elif auth_status is None:
