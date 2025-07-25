@@ -15,6 +15,9 @@ import streamlit_authenticator as stauth
 
 load_dotenv()
 
+hashed_pw = stauth.Hasher(["bup"]).generate()
+print(hashed_pw)
+
 # Use pre-hashed passwords
 credentials = {
     "usernames": {
