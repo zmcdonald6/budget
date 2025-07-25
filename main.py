@@ -38,15 +38,16 @@ authenticator = stauth.Authenticate(
 
 name, auth_status, username = authenticator.login(location="sidebar")
 
-if auth_status is False:
+login_data = authenticator.login(location="sidebar")
+
+if login_data is not None and login_data["authenticated"]:
+    name = login_data["name"]
+    username = login_data["username"]
+    authenticator.logout(location="sidebar")
+    st.success(f"✅ Welcome, {name}!")
+    # Continue with the app...
+elif login_data is not None and not login_data["authenticated"]:
     st.error("❌ Incorrect username or password.")
-elif auth_status is None:
-    st.warning("Please enter your credentials.")
-elif auth_status:
-    st.set_page_config(layout="wide")
-    authenticator.logout("Logout", location="sidebar")
-    st.title("📊 Department Budget Tracker")
-    st.success(f"✅ Logged in as: {name}")
 
     # ------------------ FILE UPLOAD ------------------
     budget_file, expense_file = upload_files()
