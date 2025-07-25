@@ -1,4 +1,4 @@
-# Author: Zedaine McDonald
+#Author: Zedaine McDonald
 
 from openpyxl import load_workbook
 from io import BytesIO
@@ -7,7 +7,7 @@ import pandas as pd
 def parse_budget(file):
     wb = load_workbook(filename=BytesIO(file.read()), data_only=True)
     sheet = wb.active
-    month_headers = [cell.value for cell in sheet[1][1:14]]  # B1 to N1
+    month_headers = [cell.value for cell in sheet[1][1:14]]
 
     data = []
     current_category = None
@@ -28,8 +28,8 @@ def parse_budget(file):
             current_category = name
             continue
 
-        months = [cell.value for cell in row[1:13]]  # Month 1–12
-        total = row[13].value  # Total column
+        months = [cell.value for cell in row[1:13]]
+        total = row[13].value
 
         row_data = {
             "Category": current_category,
@@ -41,13 +41,11 @@ def parse_budget(file):
 
     return pd.DataFrame(data)
 
-
 def parse_expense(file):
     df = pd.read_excel(file)
     df["Date"] = pd.to_datetime(df["Date"])
     df["Month"] = df["Date"].dt.strftime("%B")
     return df
-
 
 def category_summary(expense_df, budget_df):
     cat_total = expense_df.groupby("Category").agg(
@@ -63,7 +61,6 @@ def category_summary(expense_df, budget_df):
     merged["Variance"] = merged["Budgeted_Amount"] - merged["Total_Spent"]
     return merged
 
-
 def subcategory_summary(expense_df, budget_df):
     sub_total = expense_df.groupby(["Category", "Sub-Category"]).agg(
         Total_Spent=("Amount", "sum")
@@ -78,15 +75,14 @@ def subcategory_summary(expense_df, budget_df):
     merged["Variance"] = merged["Budgeted_Amount"] - merged["Total_Spent"]
     return merged
 
-
 def monthly_summary(expense_df):
     return expense_df.groupby("Month").agg(
         Total_Spent=("Amount", "sum")
     ).reset_index()
-
 
 def vendor_summary(expense_df):
     return expense_df.groupby("Vendor").agg(
         Total_Spent=("Amount", "sum"),
         Purchase_Count=("Amount", "count")
     ).reset_index()
+
