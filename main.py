@@ -13,6 +13,8 @@ from io import BytesIO
 import streamlit as st
 import streamlit_authenticator as stauth
 
+load_dotenv()
+
 # Use pre-hashed passwords
 credentials = {
     "usernames": {
@@ -48,37 +50,8 @@ elif auth_status is None:
 elif auth_status:
     st.success(f"Welcome {name}!")
     st.write("🎉 You're logged in! Add your app here.")
-
-"""
-load_dotenv()
-
-# --- LOGIN SETUP ---
-credentials = {
-    "usernames": {
-        "admin": {"name": "Admin", "password": "admin123"},
-        "zed": {"name": "Zedaine", "password": "pass123"},
-    }
-}
-
-authenticator = Authenticate(
-    credentials=credentials,
-    cookie_name="budget_app",
-    key="auth",
-    cookie_expiry_days=1
-)
-login_result = authenticator.login(location="main")
-st.write(login_result)
-name, auth_status, username = authenticator.login('main')
-login_result = authenticator.login(location="main")
-st.write(login_result)
-if auth_status is False:
-    st.error("Incorrect username or password.")
-elif auth_status is None:
-    st.warning("Please enter your username and password.")
-else:
-    authenticator.logout("Logout", location="sidebar")
-    st.title("📊 Department Budget Tracker")
-
+    st.title("Believe")
+    
     # --- MAIN MENU ---
     st.subheader("What would you like to do today?")
     col1, col2, col3 = st.columns(3)
@@ -160,4 +133,4 @@ else:
             for f in filtered_files:
                 st.markdown(f"- `{f}`")
         else:
-            st.warning("No files match your filter.") """
+            st.warning("No files match your filter.") 
