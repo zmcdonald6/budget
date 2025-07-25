@@ -13,52 +13,6 @@ from io import BytesIO
 import streamlit as st
 import streamlit_authenticator as stauth
 
-# -------------------------------
-# 1. Set up credentials
-# -------------------------------
-credentials = {
-    "usernames": {
-        "john": {
-            "name": "John Doe",
-            "password": stauth.Hasher(["123"]).generate()[0]  # Use hashed password
-        },
-        "zedaine": {
-            "name": "Zedaine McDonald",
-            "password": stauth.Hasher(["password123"]).generate()[0]
-        }
-    }
-}
-
-# -------------------------------
-# 2. Set up the authenticator
-# -------------------------------
-authenticator = stauth.Authenticate(
-    credentials=credentials,
-    cookie_name="budget_app_login",
-    key="some_random_key",
-    cookie_expiry_days=1
-)
-
-# -------------------------------
-# 3. Login Form
-# -------------------------------
-login_result = authenticator.login(location="main")
-
-if login_result:
-    name, auth_status, username = login_result
-else:
-    name = auth_status = username = None
-
-# -------------------------------
-# 4. Auth Logic
-# -------------------------------
-if auth_status is False:
-    st.error("❌ Incorrect username or password.")
-elif auth_status is None:
-    st.warning("Please enter your login credentials.")
-elif auth_status:
-    st.success(f"✅ Welcome {name}!")
-    st.write("Now show your app content here.")
 
 
 """
