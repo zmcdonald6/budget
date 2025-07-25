@@ -24,7 +24,7 @@ credentials = {
         },
         "zedaine": {
             "name": "Zedaine McDonald",
-            "password": "$2b$12$RC9M79fAqz8UQkq7p/Cz/O9k3ULZZ/3wCDtDq.sfaPQoqCgI3xS.W"
+            "password": "bup"
         }
     }
 }
