@@ -1,4 +1,3 @@
-# main.py
 # Author: Zedaine McDonald
 
 import streamlit as st
@@ -16,16 +15,16 @@ from upload import upload_files
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# ----------------- LOGIN CONFIG -----------------
+# ------------------ AUTHENTICATION ------------------
 credentials = {
     "usernames": {
         "zedaine": {
             "name": "Zedaine McDonald",
-            "password": "pbkdf2:sha256:260000$example1$abc123..."  # <-- Replace with real hash
+            "password": "pbkdf2:sha256:260000$example1$abc123..."  # Replace with actual hash
         },
         "manager": {
             "name": "Finance Manager",
-            "password": "pbkdf2:sha256:260000$example2$def456..."  # <-- Replace with real hash
+            "password": "pbkdf2:sha256:260000$example2$def456..."  # Replace with actual hash
         }
     }
 }
@@ -37,26 +36,26 @@ authenticator = stauth.Authenticate(
     cookie_expiry_days=1
 )
 
-name, auth_status, username = authenticator.login("Login", "sidebar")
+name, auth_status, username = authenticator.login("Login", location="sidebar")
 
 if auth_status is False:
     st.error("❌ Incorrect username or password.")
 elif auth_status is None:
     st.warning("Please enter your credentials.")
 elif auth_status:
-    authenticator.logout("Logout", "sidebar")
     st.set_page_config(layout="wide")
+    authenticator.logout("Logout", location="sidebar")
     st.title("📊 Department Budget Tracker")
     st.success(f"✅ Logged in as: {name}")
 
-    # ----------------- UPLOAD -----------------
+    # ------------------ FILE UPLOAD ------------------
     budget_file, expense_file = upload_files()
 
     if budget_file and expense_file:
         budget_df = parse_budget(budget_file)
         expense_df = parse_expense(expense_file)
 
-        # ---------- MONTHLY SUMMARY ----------
+        # ------------------ MONTHLY SUMMARY ------------------
         with st.expander("📅 Monthly Summary"):
             monthly_df = monthly_summary(expense_df)
             monthly_df.rename(columns=lambda x: x.replace("_", " "), inplace=True)
@@ -68,7 +67,7 @@ elif auth_status:
             ax_month.set_title("Monthly Spending")
             st.pyplot(fig_month)
 
-        # ---------- CATEGORY BREAKDOWN ----------
+        # ------------------ CATEGORY BREAKDOWN ------------------
         with st.expander("📁 Category Breakdown"):
             category_df = category_summary(expense_df, budget_df)
             category_df.rename(columns=lambda x: x.replace("_", " "), inplace=True)
@@ -80,7 +79,7 @@ elif auth_status:
             ax_cat.set_ylabel("Amount")
             st.pyplot(fig_cat)
 
-        # ---------- SUBCATEGORY BREAKDOWN ----------
+        # ------------------ SUBCATEGORY BREAKDOWN ------------------
         with st.expander("📂 Subcategory Breakdown"):
             all_categories = sorted(budget_df["Category"].dropna().unique())
 
@@ -140,7 +139,7 @@ elif auth_status:
             else:
                 st.info("No data to display. Please select one or more categories.")
 
-        # ---------- VENDOR SUMMARY ----------
+        # ------------------ VENDOR SUMMARY ------------------
         with st.expander("💼 Vendor Summary"):
             vendors = vendor_summary(expense_df)
             search = st.text_input("Search for a vendor")
@@ -156,7 +155,7 @@ elif auth_status:
             ax_vendor.set_title("Top Vendors by Spend")
             st.pyplot(fig_vendor)
 
-        # ---------- VARIANCE HEATMAP ----------
+        # ------------------ VARIANCE HEATMAP ------------------
         with st.expander("📊 Variance Heatmap"):
             variance_df = category_summary(expense_df, budget_df)
             variance_df.rename(columns=lambda x: x.replace("_", " "), inplace=True)
@@ -165,4 +164,3 @@ elif auth_status:
             sns.heatmap(pivot, cmap="coolwarm", annot=True, fmt=".0f", ax=ax_heat)
             ax_heat.set_title("Budget Variance Heatmap")
             st.pyplot(fig_heat)
-
