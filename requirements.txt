@@ -4,3 +4,5 @@ openpyxl
 matplotlib
 seaborn
 streamlit_authenticator
+boto3
+python-dotenv
