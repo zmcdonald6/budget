@@ -11,8 +11,7 @@ from s3_utils import upload_to_s3, list_files_by_type, get_file_from_s3
 from io import BytesIO
 
 load_dotenv()
-login_result = authenticator.login(location="main")
-st.write(login_result)
+
 # --- LOGIN SETUP ---
 credentials = {
     "usernames": {
@@ -27,7 +26,8 @@ authenticator = Authenticate(
     key="auth",
     cookie_expiry_days=1
 )
-
+login_result = authenticator.login(location="main")
+st.write(login_result)
 name, auth_status, username = authenticator.login('main')
 login_result = authenticator.login(location="main")
 st.write(login_result)
