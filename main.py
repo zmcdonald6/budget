@@ -20,7 +20,7 @@ credentials = {
     "usernames": {
         "zedaine": {
             "name": "Zedaine McDonald",
-            "password": "pbkdf2:sha256:260000$example1$abc123..."  # Replace with actual hash
+            "password": "bup"  # Replace with actual hash
         },
         "manager": {
             "name": "Finance Manager",
