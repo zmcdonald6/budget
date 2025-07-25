@@ -36,7 +36,7 @@ authenticator = stauth.Authenticate(
     cookie_expiry_days=1
 )
 
-name, auth_status, username = authenticator.login("Login", location="sidebar")
+name, auth_status, username = authenticator.login(location="sidebar")
 
 if auth_status is False:
     st.error("❌ Incorrect username or password.")
