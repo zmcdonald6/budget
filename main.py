@@ -36,7 +36,7 @@ authenticator = stauth.Authenticate(
 )
 
 # This must be passed with two positional arguments
-authenticator.login("Login", "main")
+authenticator.login("Login",location= "main")
 
 # --- Handle login status ---
 if st.session_state.get("authentication_status") is False:
