@@ -36,18 +36,16 @@ authenticator = stauth.Authenticate(
     cookie_expiry_days=1
 )
 
-#name, auth_status, username = authenticator.login(location="sidebar")
-
 login_data = authenticator.login(location="sidebar")
 
 if login_data is not None and login_data["authenticated"]:
     name = login_data["name"]
     username = login_data["username"]
     authenticator.logout(location="sidebar")
-    st.success(f"✅ Welcome, {name}!")
-    # Continue with the app...
-elif login_data is not None and not login_data["authenticated"]:
-    st.error("❌ Incorrect username or password.")
+
+    st.set_page_config(layout="wide")
+    st.title("\ud83d\udcca Department Budget Tracker")
+    st.success(f"\u2705 Logged in as: {name}")
 
     # ------------------ FILE UPLOAD ------------------
     budget_file, expense_file = upload_files()
@@ -57,7 +55,7 @@ elif login_data is not None and not login_data["authenticated"]:
         expense_df = parse_expense(expense_file)
 
         # ------------------ MONTHLY SUMMARY ------------------
-        with st.expander("📅 Monthly Summary"):
+        with st.expander("\ud83d\uddd5\ufe0f Monthly Summary"):
             monthly_df = monthly_summary(expense_df)
             monthly_df.rename(columns=lambda x: x.replace("_", " "), inplace=True)
             st.dataframe(monthly_df)
@@ -69,25 +67,25 @@ elif login_data is not None and not login_data["authenticated"]:
             st.pyplot(fig_month)
 
         # ------------------ CATEGORY BREAKDOWN ------------------
-        with st.expander("📁 Category Breakdown"):
+        with st.expander("\ud83d\udcc1 Category Breakdown"):
             category_df = category_summary(expense_df, budget_df)
             category_df.rename(columns=lambda x: x.replace("_", " "), inplace=True)
             st.dataframe(category_df)
 
             fig_cat, ax_cat = plt.subplots()
-            category_df.set_index("Category")[["Total Spent", "Budgeted Amount"]].plot(kind="bar", ax=ax_cat)
+            category_df.set_index("Category")["Total Spent", "Budgeted Amount"].plot(kind="bar", ax=ax_cat)
             ax_cat.set_title("Actual vs Budget by Category")
             ax_cat.set_ylabel("Amount")
             st.pyplot(fig_cat)
 
         # ------------------ SUBCATEGORY BREAKDOWN ------------------
-        with st.expander("📂 Subcategory Breakdown"):
+        with st.expander("\ud83d\udcc2 Subcategory Breakdown"):
             all_categories = sorted(budget_df["Category"].dropna().unique())
 
             if "selected_categories" not in st.session_state:
                 st.session_state.selected_categories = set(all_categories)
 
-            with st.expander("🗂️ Select Categories to Display"):
+            with st.expander("\ud83d\uddc2\ufe0f Select Categories to Display"):
                 def toggle_all_categories():
                     if st.session_state.select_all:
                         st.session_state.selected_categories = set(all_categories)
@@ -141,7 +139,7 @@ elif login_data is not None and not login_data["authenticated"]:
                 st.info("No data to display. Please select one or more categories.")
 
         # ------------------ VENDOR SUMMARY ------------------
-        with st.expander("💼 Vendor Summary"):
+        with st.expander("\ud83d\udcbc Vendor Summary"):
             vendors = vendor_summary(expense_df)
             search = st.text_input("Search for a vendor")
             if search:
@@ -157,7 +155,7 @@ elif login_data is not None and not login_data["authenticated"]:
             st.pyplot(fig_vendor)
 
         # ------------------ VARIANCE HEATMAP ------------------
-        with st.expander("📊 Variance Heatmap"):
+        with st.expander("\ud83d\udcca Variance Heatmap"):
             variance_df = category_summary(expense_df, budget_df)
             variance_df.rename(columns=lambda x: x.replace("_", " "), inplace=True)
             pivot = variance_df.pivot_table(index="Category", values="Variance")
@@ -165,3 +163,8 @@ elif login_data is not None and not login_data["authenticated"]:
             sns.heatmap(pivot, cmap="coolwarm", annot=True, fmt=".0f", ax=ax_heat)
             ax_heat.set_title("Budget Variance Heatmap")
             st.pyplot(fig_heat)
+
+elif login_data is not None and not login_data["authenticated"]:
+    st.error("\u274c Incorrect username or password.")
+else:
+    st.warning("\u26a0\ufe0f Please enter your credentials.")
