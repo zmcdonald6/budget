@@ -1,3 +1,4 @@
+# main.py
 # Author: Zedaine McDonald
 
 import streamlit as st
@@ -15,19 +16,22 @@ from upload import upload_files
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# ---------- AUTHENTICATION SETUP ----------
-names = ["Zedaine McDonald", "Finance Manager"]
-usernames = ["zedaine", "manager"]
-hashed_passwords = [
-    # Replace these with real hashes from stauth.Hasher([...]).generate()
-    'pbkdf2:sha256:260000$example1$abc123...',
-    'pbkdf2:sha256:260000$example2$def456...'
-]
+# ----------------- LOGIN CONFIG -----------------
+credentials = {
+    "usernames": {
+        "zedaine": {
+            "name": "Zedaine McDonald",
+            "password": "pbkdf2:sha256:260000$example1$abc123..."  # <-- Replace with real hash
+        },
+        "manager": {
+            "name": "Finance Manager",
+            "password": "pbkdf2:sha256:260000$example2$def456..."  # <-- Replace with real hash
+        }
+    }
+}
 
 authenticator = stauth.Authenticate(
-    names=names,
-    usernames=usernames,
-    passwords=hashed_passwords,
+    credentials=credentials,
     cookie_name="budget_app",
     key="auth_cookie_secret",
     cookie_expiry_days=1
@@ -35,19 +39,17 @@ authenticator = stauth.Authenticate(
 
 name, auth_status, username = authenticator.login("Login", "sidebar")
 
-# ---------- HANDLE LOGIN STATES ----------
 if auth_status is False:
     st.error("❌ Incorrect username or password.")
 elif auth_status is None:
     st.warning("Please enter your credentials.")
 elif auth_status:
-
     authenticator.logout("Logout", "sidebar")
     st.set_page_config(layout="wide")
     st.title("📊 Department Budget Tracker")
     st.success(f"✅ Logged in as: {name}")
 
-    # ---------- FILE UPLOAD ----------
+    # ----------------- UPLOAD -----------------
     budget_file, expense_file = upload_files()
 
     if budget_file and expense_file:
@@ -163,3 +165,4 @@ elif auth_status:
             sns.heatmap(pivot, cmap="coolwarm", annot=True, fmt=".0f", ax=ax_heat)
             ax_heat.set_title("Budget Variance Heatmap")
             st.pyplot(fig_heat)
+
