@@ -27,7 +27,7 @@ authenticator = Authenticate(
     cookie_expiry_days=1
 )
 
-name, auth_status, username = authenticator.login(Title='Login',location='main')
+name, auth_status, username = authenticator.login('main')
 
 if auth_status is False:
     st.error("Incorrect username or password.")
