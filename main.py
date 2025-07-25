@@ -13,7 +13,41 @@ from io import BytesIO
 import streamlit as st
 import streamlit_authenticator as stauth
 
+# Use pre-hashed passwords
+credentials = {
+    "usernames": {
+        "john": {
+            "name": "John Doe",
+            "password": "$2b$12$XlGpJbWkuI5NzTo5vJq9g.GYjs1vlbq5TjRXt6tT9eLptP3piM2kS"
+        },
+        "zedaine": {
+            "name": "Zedaine McDonald",
+            "password": "$2b$12$RC9M79fAqz8UQkq7p/Cz/O9k3ULZZ/3wCDtDq.sfaPQoqCgI3xS.W"
+        }
+    }
+}
 
+authenticator = stauth.Authenticate(
+    credentials,
+    cookie_name="budget_app_login",
+    key="abcdef",
+    cookie_expiry_days=1
+)
+
+login_result = authenticator.login(location="main")
+
+if login_result:
+    name, auth_status, username = login_result
+else:
+    name = auth_status = username = None
+
+if auth_status is False:
+    st.error("Incorrect username or password.")
+elif auth_status is None:
+    st.warning("Please enter your login credentials.")
+elif auth_status:
+    st.success(f"Welcome {name}!")
+    st.write("🎉 You're logged in! Add your app here.")
 
 """
 load_dotenv()
