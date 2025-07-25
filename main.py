@@ -30,13 +30,13 @@ credentials = {
 
 authenticator = stauth.Authenticate(
     credentials,
-    cookie_name="budget_app_login",
-    key="abcdef",
-    cookie_expiry_days=1
+    "budget_app_login",
+    "abcdef",
+    1
 )
 
 # This must be passed with two positional arguments
-authenticator.login("Login",location= "main")
+authenticator.login("Login","main")
 
 # --- Handle login status ---
 if st.session_state.get("authentication_status") is False:
