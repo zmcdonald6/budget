@@ -36,16 +36,18 @@ authenticator = stauth.Authenticate(
 )
 
 # This must be passed with two positional arguments
-name, auth_status, username = authenticator.login("Login", "main")
+authenticator.login("Login", "main")
 
 # --- Handle login status ---
-if auth_status is False:
+if st.session_state.get("authentication_status") is False:
     st.error("❌ Incorrect username or password.")
-elif auth_status is None:
-    st.warning("⏳ Please enter your login credentials.")
-elif auth_status:
-    st.success(f"✅ Welcome {name}!")
-    authenticator.logout("Logout", "sidebar")
+    
+elif st.session_state.get("authentication_status") is None:
+    st.warning("👤 Please enter your login credentials.")
+
+elif st.session_state.get("authentication_status"):
+    st.success(f"Welcome{st.session_state['name']}!")
+    st.write("You're logged in")
 
     st.title("📊 Budget Tracker - Believe")
 
