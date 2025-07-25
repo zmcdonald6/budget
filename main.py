@@ -2,20 +2,17 @@
 
 import streamlit as st
 import pandas as pd
-from streamlit_authenticator import Authenticate
 from dotenv import load_dotenv
 import os
+from io import BytesIO
+import streamlit_authenticator as stauth
+
 from Analysis import parse_budget, parse_expense
 from run_report import run_report
 from s3_utils import upload_to_s3, list_files_by_type, get_file_from_s3
-from io import BytesIO
 
-import streamlit as st
-import streamlit_authenticator as stauth
-
+# Load environment variables
 load_dotenv()
-
-
 
 # Use pre-hashed passwords
 credentials = {
@@ -38,22 +35,20 @@ authenticator = stauth.Authenticate(
     cookie_expiry_days=1
 )
 
-login_result = authenticator.login("Login",location= "main")
+# This must be passed with two positional arguments
+name, auth_status, username = authenticator.login("Login", "main")
 
-if login_result:
-    name, auth_status, username = login_result
-else:
-    name = auth_status = username = None
-
+# --- Handle login status ---
 if auth_status is False:
-    st.error("Incorrect username or password.")
+    st.error("❌ Incorrect username or password.")
 elif auth_status is None:
-    st.warning("Please enter your login credentials.")
+    st.warning("⏳ Please enter your login credentials.")
 elif auth_status:
-    st.success(f"Welcome {name}!")
-    st.write("🎉 You're logged in! Add your app here.")
-    st.title("Believe")
-    
+    st.success(f"✅ Welcome {name}!")
+    authenticator.logout("Logout", "sidebar")
+
+    st.title("📊 Budget Tracker - Believe")
+
     # --- MAIN MENU ---
     st.subheader("What would you like to do today?")
     col1, col2, col3 = st.columns(3)
@@ -79,6 +74,7 @@ elif auth_status:
                 budget_df = parse_budget(budget_file)
                 expense_df = parse_expense(expense_file)
                 run_report(expense_df, budget_df)
+
         else:
             budgets = list_files_by_type("budget")
             expenses = list_files_by_type("expense")
@@ -135,4 +131,4 @@ elif auth_status:
             for f in filtered_files:
                 st.markdown(f"- `{f}`")
         else:
-            st.warning("No files match your filter.") 
+            st.warning("No files match your filter.")
